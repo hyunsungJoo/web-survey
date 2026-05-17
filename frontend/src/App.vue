@@ -56,7 +56,8 @@ const GOOGLE_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwybid-i3loF
 const containerScale = ref(1)
 
 const updateScale = () => {
-  if (window.innerWidth <= 768) {
+  // 🌟 태블릿/스탠바이미 포괄을 위해 모바일 기준점을 768px -> 500px로 변경
+  if (window.innerWidth <= 500) {
     containerScale.value = 1
     return
   }
@@ -111,7 +112,7 @@ const submitRating = (item) => {
 </script>
 
 <style scoped>
-/* 1. PC 및 대형 화면 모니터 스타일 */
+/* 1. PC, 태블릿, 스탠바이미 등 대형/중형 화면 통합 스타일 */
 .survey-wrapper {
   background-color: #444444;
   height: 100vh;
@@ -122,10 +123,11 @@ const submitRating = (item) => {
   align-items: center;
   padding: 40px; 
   box-sizing: border-box;
-  overflow: hidden; 
+  overflow: hidden; /* 🌟 한 화면에 고정하여 스크롤 절대 방지 */
 }
 
-@media (min-width: 769px) {
+/* 🌟 태블릿 크기(501px 이상)부터는 가로형 레이아웃과 자동 스케일링 작동 */
+@media (min-width: 501px) {
   .survey-container {
     width: 1750px;
     flex-shrink: 0;
@@ -228,20 +230,19 @@ const submitRating = (item) => {
   opacity: 0.9;
 }
 
-/* 2. 📱 폰/모바일용 반응형 스타일 */
-@media (max-width: 768px) {
+/* 2. 📱 세로형 스마트폰 전용 반응형 스타일 */
+@media (max-width: 500px) {
   .survey-wrapper {
-    /* 🌟 해결 2: 모바일에서는 flex 정렬을 풀고 일반 블록 레이아웃으로 변경하여 상단 글씨 짤림 방지 */
     display: block;
     padding: 40px 20px;
     height: 100vh;
     height: 100dvh;
-    overflow-y: auto; /* 자연스러운 터치 스크롤 보장 */
+    overflow-y: auto; 
   }
 
   .survey-container {
     width: 100%;
-    transform: none !important; /* 모바일은 트랜스폼 해제 */
+    transform: none !important; 
   }
 
   .survey-header {
@@ -293,7 +294,6 @@ const submitRating = (item) => {
     margin-left: auto;
   }
 
-  /* 🌟 모바일 전용 토스트 크기 최적화 (폰 화면에 맞게 알맞게 축소) */
   .toast-notification {
     top: 30px !important;
     padding: 18px 40px !important;
@@ -303,7 +303,7 @@ const submitRating = (item) => {
   }
 }
 
-/* 대형 토스트 알림창 스타일 (기본 PC 사양) */
+/* 대형 토스트 알림창 스타일 (PC 및 태블릿 공용) */
 .toast-notification {
   position: fixed;
   top: 80px; 
@@ -316,7 +316,7 @@ const submitRating = (item) => {
   font-size: 2.5rem; 
   font-weight: 800;
   box-shadow: 0 15px 50px rgba(0, 0, 0, 0.6);
-  z-index: 99999; /* 최상위 레이어 보장 */
+  z-index: 99999; 
   white-space: nowrap;
   border: 4px solid #42b883;
 }
