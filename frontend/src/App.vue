@@ -11,10 +11,9 @@
       class="survey-container" 
       :style="{ transform: `scale(${containerScale})`, transformOrigin: 'center center' }"
     >
-      <div class="survey-header">
-        <h2 class="sub-title-1">고객님</h2>
-        <h2 class="sub-title-1">오늘 식사 맛있게 드셨나요?</h2>
-        <p class="sub-title-2">고객님의 소중한 의견을 들려주세요.</p>
+      <div class="survey-header">      
+        <h1 class="main-title">오늘 식사 맛있게 드셨나요?</h1>
+        <h2 class="sub-title-1">고객님의 소중한 의견을 들려주세요.</h2>
       </div>
       
       <div class="rating-group" :class="{ 'is-loading': loading }">
@@ -56,7 +55,7 @@ const GOOGLE_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwybid-i3loF
 const containerScale = ref(1)
 
 const updateScale = () => {
-  // 🌟 태블릿/스탠바이미 포괄을 위해 모바일 기준점을 768px -> 500px로 변경
+  // 태블릿/스탠바이미 지원을 위해 500px 이하는 모바일 모드
   if (window.innerWidth <= 500) {
     containerScale.value = 1
     return
@@ -123,10 +122,9 @@ const submitRating = (item) => {
   align-items: center;
   padding: 40px; 
   box-sizing: border-box;
-  overflow: hidden; /* 🌟 한 화면에 고정하여 스크롤 절대 방지 */
+  overflow: hidden; 
 }
 
-/* 🌟 태블릿 크기(501px 이상)부터는 가로형 레이아웃과 자동 스케일링 작동 */
 @media (min-width: 501px) {
   .survey-container {
     width: 1750px;
@@ -144,24 +142,22 @@ const submitRating = (item) => {
 .survey-header {
   margin-bottom: 100px; 
 }
+
+/* 🌟 h1 크기: 가장 크게 강조 */
 .main-title {
   font-size: 6rem; 
   font-weight: 800;
   color: #ffffff;
-  margin: 0 0 24px 0;
+  margin: 0 0 15px 0;
   letter-spacing: -1.5px;
 }
+
+/* 🌟 h2 크기: 중간 강조 */
 .sub-title-1 {
   font-size: 3.8rem; 
   font-weight: 600;
   color: #ffffff;
-  margin: 0 0 28px 0;
-}
-.sub-title-2 {
-  font-size: 2.4rem; 
-  font-weight: 700;
-  color: #f3f4f6;
-  margin: 0;
+  margin: 10px 0 28px 0;
 }
 
 .rating-group {
@@ -248,9 +244,8 @@ const submitRating = (item) => {
   .survey-header {
     margin-bottom: 40px;
   }
-  .main-title { font-size: 2.5rem; margin-bottom: 10px; }
+  .main-title { font-size: 2.5rem; margin-bottom: 8px; }
   .sub-title-1 { font-size: 1.6rem; margin-bottom: 12px; }
-  .sub-title-2 { font-size: 1.1rem; }
 
   .rating-group {
     flex-direction: column;
@@ -303,7 +298,7 @@ const submitRating = (item) => {
   }
 }
 
-/* 대형 토스트 알림창 스타일 (PC 및 태블릿 공용) */
+/* 대형 토스트 알림창 스타일 */
 .toast-notification {
   position: fixed;
   top: 80px; 
