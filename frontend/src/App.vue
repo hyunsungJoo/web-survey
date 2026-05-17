@@ -1,26 +1,13 @@
 <template>
   <div class="survey-wrapper">
     
-    <div v-if="!isAuthenticated" class="login-wrapper">
-      <div class="login-box">
-        <h1 class="login-title">안녕하세요 👋</h1>
-        <p class="login-subtitle">회사명을 입력해주세요.</p>
-        
-        <form @submit.prevent="handleLogin" class="login-form">
-          <input 
-            v-model="companyInput" 
-            type="text" 
-            placeholder="회사명 입력" 
-            class="login-input"
-            autofocus
-          />
-          <button type="submit" class="login-btn">입장하기</button>
-        </form>
+    <Transition name="fade">
+      <div v-if="showToast" class="toast-notification">
+        ✅ 소중한 의견이 기록되었습니다!
       </div>
-    </div>
+    </Transition>
 
     <div 
-      v-else
       class="survey-container" 
       :style="{ transform: `scale(${containerScale})`, transformOrigin: 'center center' }"
     >
@@ -45,12 +32,6 @@
         </div>
       </div>
     </div>
-
-    <Transition name="fade">
-      <div v-if="showToast" class="toast-notification">
-        ✅ 소중한 의견이 기록되었습니다!
-      </div>
-    </Transition>
   </div>
 </template>
 
@@ -66,39 +47,16 @@ const ratingOptions = [
   { score: 1, text: '매우 불만족', emoji: '😰' }
 ]
 
-// 🌟 로그인 및 인증 관련 상태 변수
-const isAuthenticated = ref(false)
-const companyInput = ref('')
-
 const selectedOption = ref({ score: null, text: '' })
 const loading = ref(false)
 const showToast = ref(false)
 
 const GOOGLE_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwybid-i3loF0bbZsqFWl9ZXcYK9gGLD2KVnXFoNWahcY1Pombp3OAGepdmqIUB9qrH/exec'
 
-// 🌟 로그인 인증 처리 함수 (대소문자 무관 keli 체크)
-const handleLogin = () => {
-  if (companyInput.value.trim().toLowerCase() === 'keli') {
-    // 세션 스토리지에 인증 정보 저장 (브라우저 창을 닫기 전까지 유지)
-    sessionStorage.setItem('survey_auth_company', 'keli')
-    isAuthenticated.value = true
-    
-    // 화면 전환 후 스케일 재계산 트리거
-    setTimeout(() => {
-      updateScale()
-    }, 50)
-  } else {
-    alert('올바른 회사명이 아닙니다. 다시 확인해주세요.')
-    companyInput.value = ''
-  }
-}
-
-// 모니터 및 브라우저 창 크기에 맞춘 스케일 계산 로직
 const containerScale = ref(1)
 
 const updateScale = () => {
-  // 인증되지 않았거나 모바일 화면(768px 이하)일 때는 스케일 계산 제외
-  if (!isAuthenticated.value || window.innerWidth <= 768) {
+  if (window.innerWidth <= 768) {
     containerScale.value = 1
     return
   }
@@ -116,14 +74,6 @@ const updateScale = () => {
 }
 
 onMounted(() => {
-  // 🌟 [리다이렉트 핵심] 입장 시 기존 세션 인증 기록이 있는지 체크
-  const savedAuth = sessionStorage.getItem('survey_auth_company')
-  if (savedAuth === 'keli') {
-    isAuthenticated.value = true
-  } else {
-    isAuthenticated.value = false // 인증 기록 없으면 무조건 로그인 화면 고정
-  }
-
   updateScale()
   window.addEventListener('resize', updateScale)
 })
@@ -161,7 +111,7 @@ const submitRating = (item) => {
 </script>
 
 <style scoped>
-/* 1. PC 및 대형 화면 모니터 기본 스타일 */
+/* 1. PC 및 대형 화면 모니터 스타일 */
 .survey-wrapper {
   background-color: #444444;
   height: 100vh;
@@ -175,70 +125,6 @@ const submitRating = (item) => {
   overflow: hidden; 
 }
 
-/* 🔒 로그인 화면 전용 스타일 디자인 (175% 확대 무드 반영) */
-.login-wrapper {
-  width: 100%;
-  max-width: 700px;
-  padding: 20px;
-  box-sizing: border-box;
-}
-.login-box {
-  background-color: #ffffff;
-  border-radius: 32px;
-  padding: 60px 50px;
-  text-align: center;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
-}
-.login-title {
-  font-size: 3.5rem;
-  font-weight: 800;
-  color: #1a202c;
-  margin: 0 0 15px 0;
-}
-.login-subtitle {
-  font-size: 1.6rem;
-  color: #4a5568;
-  margin: 0 0 40px 0;
-  font-weight: 500;
-  line-height: 1.4;
-}
-.login-form {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-.login-input {
-  width: 100%;
-  padding: 22px;
-  font-size: 1.8rem;
-  border: 3px solid #e2e8f0;
-  border-radius: 18px;
-  box-sizing: border-box;
-  outline: none;
-  text-align: center;
-  transition: border-color 0.2s;
-  font-weight: 600;
-}
-.login-input:focus {
-  border-color: #42b883;
-}
-.login-btn {
-  width: 100%;
-  padding: 22px;
-  font-size: 1.8rem;
-  font-weight: bold;
-  background-color: #42b883;
-  color: #ffffff;
-  border: none;
-  border-radius: 18px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-.login-btn:hover {
-  background-color: #33996a;
-}
-
-/* 📝 기존 설문조사 메인 스타일 */
 @media (min-width: 769px) {
   .survey-container {
     width: 1750px;
@@ -345,30 +231,17 @@ const submitRating = (item) => {
 /* 2. 📱 폰/모바일용 반응형 스타일 */
 @media (max-width: 768px) {
   .survey-wrapper {
+    /* 🌟 해결 2: 모바일에서는 flex 정렬을 풀고 일반 블록 레이아웃으로 변경하여 상단 글씨 짤림 방지 */
     display: block;
     padding: 40px 20px;
     height: 100vh;
     height: 100dvh;
-    overflow-y: auto; 
+    overflow-y: auto; /* 자연스러운 터치 스크롤 보장 */
   }
 
-  /* 모바일 로그인 박스 최적화 */
-  .login-wrapper {
-    padding: 0;
-    margin-top: 20px;
-  }
-  .login-box {
-    padding: 40px 25px;
-    border-radius: 20px;
-  }
-  .login-title { font-size: 2.2rem; }
-  .login-subtitle { font-size: 1.2rem; margin-bottom: 25px; }
-  .login-input, .login-btn { padding: 16px; font-size: 1.3rem; border-radius: 12px; }
-
-  /* 모바일 설문 최적화 */
   .survey-container {
     width: 100%;
-    transform: none !important; 
+    transform: none !important; /* 모바일은 트랜스폼 해제 */
   }
 
   .survey-header {
@@ -420,6 +293,7 @@ const submitRating = (item) => {
     margin-left: auto;
   }
 
+  /* 🌟 모바일 전용 토스트 크기 최적화 (폰 화면에 맞게 알맞게 축소) */
   .toast-notification {
     top: 30px !important;
     padding: 18px 40px !important;
@@ -429,7 +303,7 @@ const submitRating = (item) => {
   }
 }
 
-/* 대형 토스트 알림창 스타일 */
+/* 대형 토스트 알림창 스타일 (기본 PC 사양) */
 .toast-notification {
   position: fixed;
   top: 80px; 
@@ -442,7 +316,7 @@ const submitRating = (item) => {
   font-size: 2.5rem; 
   font-weight: 800;
   box-shadow: 0 15px 50px rgba(0, 0, 0, 0.6);
-  z-index: 99999; 
+  z-index: 99999; /* 최상위 레이어 보장 */
   white-space: nowrap;
   border: 4px solid #42b883;
 }
