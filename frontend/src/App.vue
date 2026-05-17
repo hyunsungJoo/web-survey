@@ -1,6 +1,9 @@
 <template>
   <div class="survey-wrapper">
-    <div class="survey-container">
+    <div 
+      class="survey-container" 
+      :style="{ transform: `scale(${containerScale})`, transformOrigin: 'center center' }"
+    >
       <div class="survey-header">
         <h1 class="main-title">고객님</h1>
         <h2 class="sub-title-1">오늘 식사 맛있게 드셨나요?</h2>
@@ -32,7 +35,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import axios from 'axios'
 
 const ratingOptions = [
@@ -48,6 +51,39 @@ const loading = ref(false)
 const showToast = ref(false)
 
 const GOOGLE_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwybid-i3loF0bbZsqFWl9ZXcYK9gGLD2KVnXFoNWahcY1Pombp3OAGepdmqIUB9qrH/exec'
+
+// 🌟 모니터 및 브라우저 창 크기에 맞춰 강제로 한 화면에 맞추는 스케일 계산 로직
+const containerScale = ref(1)
+
+const updateScale = () => {
+  // 모바일 화면(768px 이하)에서는 원래 지정된 세로 정렬 레이아웃이 작동하도록 제외
+  if (window.innerWidth <= 768) {
+    containerScale.value = 1
+    return
+  }
+  
+  const baseWidth = 1750 // 마음에 들어하셨던 거대 레이아웃의 기준 가로폭
+  const baseHeight = 960 // 거대 레이아웃의 기준 세로폭
+  
+  // 패딩 여백을 제외한 현재 브라우저의 실제 가용 크기 측정
+  const availableWidth = window.innerWidth - 60
+  const availableHeight = window.innerHeight - 60
+  
+  const scaleX = availableWidth / baseWidth
+  const scaleY = availableHeight / baseHeight
+  
+  // 가로/세로 중 더 많이 구겨진 쪽의 비율을 선택해 화면에 100% 핏(Fit) 시킴 (최대 크기는 1로 제한)
+  containerScale.value = Math.min(scaleX, scaleY, 1)
+}
+
+onMounted(() => {
+  updateScale()
+  window.addEventListener('resize', updateScale)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateScale)
+})
 
 const submitRating = async (item) => {
   if (loading.value) return 
@@ -85,29 +121,36 @@ const submitRating = async (item) => {
 </script>
 
 <style scoped>
-/* 1. 모니터 전체 화면 스타일 */
+/* 1. 모니터 전체 화면 스타일 (화면 잠금) */
 .survey-wrapper {
   background-color: #444444;
-  min-height: 100vh;
-  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  width: 100vw;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 80px 40px; 
+  padding: 40px; 
   box-sizing: border-box;
+  overflow: hidden; /* 🌟 어떤 상황에서도 스크롤바가 절대 나타나지 않음 */
 }
 
-/* 초초대형 스크린을 위한 가로폭 확장 */
+/* 🌟 데스크톱 환경에서는 고정 캔버스 크기를 부여하여 비율 왜곡을 방지 */
+@media (min-width: 769px) {
+  .survey-container {
+    width: 1750px;
+    flex-shrink: 0;
+  }
+}
+
 .survey-container {
-  width: 100%;
-  max-width: 1750px; 
   text-align: center;
   font-family: sans-serif;
   position: relative;
   background-color: transparent;
 }
 
-/* 타이틀 영역 스타일링 (초초대형 스케일) */
+/* 🌟 원하셨던 시원시원한 초대형 폰트와 PX 여백 레이아웃 그대로 복구 */
 .survey-header {
   margin-bottom: 100px; 
 }
@@ -144,7 +187,7 @@ const submitRating = async (item) => {
   opacity: 0.6;
 }
 
-/* 만족도 카드 스타일 (자이언트 스케일) */
+/* 만족도 카드 스타일 (자이언트 스케일 복구) */
 .rating-item {
   flex: 1;
   border: 4px solid #333333; 
@@ -195,18 +238,10 @@ const submitRating = async (item) => {
 }
 
 /* 2. 📱 모바일/태블릿용 반응형 스타일 */
-@media (max-width: 1200px) {
-  .main-title { font-size: 4rem; }
-  .sub-title-1 { font-size: 2.6rem; }
-  .sub-title-2 { font-size: 1.8rem; }
-  .emoji { font-size: 6.5rem; }
-  .text { font-size: 1.6rem; }
-  .score { font-size: 1.2rem; }
-}
-
 @media (max-width: 768px) {
   .survey-wrapper {
     padding: 30px 15px;
+    overflow-y: auto; /* 모바일 기기 자체에서는 터치 스크롤 허용 */
   }
 
   .main-title { font-size: 2.5rem; margin-bottom: 10px; }
@@ -216,6 +251,7 @@ const submitRating = async (item) => {
   .rating-group {
     flex-direction: column;
     gap: 16px;
+    width: 100%;
   }
 
   .rating-item {
@@ -289,6 +325,9 @@ const submitRating = async (item) => {
 html, body {
   margin: 0 !important;
   padding: 0 !important;
+  height: 100% !important;
+  width: 100% !important;
   background-color: #444444 !important;
+  overflow: hidden !important; 
 }
 </style>
