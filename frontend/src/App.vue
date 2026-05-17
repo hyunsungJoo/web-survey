@@ -52,27 +52,24 @@ const showToast = ref(false)
 
 const GOOGLE_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwybid-i3loF0bbZsqFWl9ZXcYK9gGLD2KVnXFoNWahcY1Pombp3OAGepdmqIUB9qrH/exec'
 
-// 🌟 모니터 및 브라우저 창 크기에 맞춰 강제로 한 화면에 맞추는 스케일 계산 로직
+// 모니터 및 브라우저 창 크기에 맞춰 강제로 한 화면에 맞추는 스케일 계산 로직
 const containerScale = ref(1)
 
 const updateScale = () => {
-  // 모바일 화면(768px 이하)에서는 원래 지정된 세로 정렬 레이아웃이 작동하도록 제외
   if (window.innerWidth <= 768) {
     containerScale.value = 1
     return
   }
   
-  const baseWidth = 1750 // 마음에 들어하셨던 거대 레이아웃의 기준 가로폭
-  const baseHeight = 960 // 거대 레이아웃의 기준 세로폭
+  const baseWidth = 1750 
+  const baseHeight = 960 
   
-  // 패딩 여백을 제외한 현재 브라우저의 실제 가용 크기 측정
   const availableWidth = window.innerWidth - 60
   const availableHeight = window.innerHeight - 60
   
   const scaleX = availableWidth / baseWidth
   const scaleY = availableHeight / baseHeight
   
-  // 가로/세로 중 더 많이 구겨진 쪽의 비율을 선택해 화면에 100% 핏(Fit) 시킴 (최대 크기는 1로 제한)
   containerScale.value = Math.min(scaleX, scaleY, 1)
 }
 
@@ -121,7 +118,7 @@ const submitRating = async (item) => {
 </script>
 
 <style scoped>
-/* 1. 모니터 전체 화면 스타일 (화면 잠금) */
+/* 1. 모니터 전체 화면 스타일 */
 .survey-wrapper {
   background-color: #444444;
   height: 100vh;
@@ -132,10 +129,9 @@ const submitRating = async (item) => {
   align-items: center;
   padding: 40px; 
   box-sizing: border-box;
-  overflow: hidden; /* 🌟 어떤 상황에서도 스크롤바가 절대 나타나지 않음 */
+  overflow: hidden; 
 }
 
-/* 🌟 데스크톱 환경에서는 고정 캔버스 크기를 부여하여 비율 왜곡을 방지 */
 @media (min-width: 769px) {
   .survey-container {
     width: 1750px;
@@ -150,7 +146,6 @@ const submitRating = async (item) => {
   background-color: transparent;
 }
 
-/* 🌟 원하셨던 시원시원한 초대형 폰트와 PX 여백 레이아웃 그대로 복구 */
 .survey-header {
   margin-bottom: 100px; 
 }
@@ -187,7 +182,7 @@ const submitRating = async (item) => {
   opacity: 0.6;
 }
 
-/* 만족도 카드 스타일 (자이언트 스케일 복구) */
+/* 만족도 카드 스타일 */
 .rating-item {
   flex: 1;
   border: 4px solid #333333; 
@@ -198,12 +193,19 @@ const submitRating = async (item) => {
   background-color: #ffffff;
   color: #1a202c;
   box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
+  
+  /* 🌟 모바일 기기 잔상 및 테두리 아웃라인 방지 코드 추가 */
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
 }
 
-.rating-item:hover {
-  border-color: #42b883;
-  background-color: #f4fbf8;
-  transform: translateY(-12px); 
+/* 🌟 중요: 마우스 커서가 있는 PC 환경에서만 호버 테두리 효과 발동 (모바일 잔상 버그 해결) */
+@media (hover: hover) {
+  .rating-item:hover {
+    border-color: #42b883;
+    background-color: #f4fbf8;
+    transform: translateY(-12px); 
+  }
 }
 
 .rating-item.active {
@@ -241,7 +243,7 @@ const submitRating = async (item) => {
 @media (max-width: 768px) {
   .survey-wrapper {
     padding: 30px 15px;
-    overflow-y: auto; /* 모바일 기기 자체에서는 터치 스크롤 허용 */
+    overflow-y: auto; 
   }
 
   .main-title { font-size: 2.5rem; margin-bottom: 10px; }
@@ -264,8 +266,9 @@ const submitRating = async (item) => {
     border-radius: 16px;
   }
 
-  .rating-item:hover {
-    transform: translateX(6px);
+  /* 🌟 모바일 끈적이는 터치 이동 제거 (클릭 잔상 유발 방지) */
+  .rating-item:active {
+    background-color: #f9f9f9; /* 터치한 순간에만 살짝 피드백 제공 */
   }
 
   .emoji {
