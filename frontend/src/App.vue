@@ -12,7 +12,7 @@
       :style="{ transform: `scale(${containerScale})`, transformOrigin: 'center center' }"
     >
       <div class="survey-header">
-        <h1 class="main-title">고객님</h1>
+        <h2 class="sub-title-1">고객님</h2>
         <h2 class="sub-title-1">오늘 식사 맛있게 드셨나요?</h2>
         <p class="sub-title-2">고객님의 소중한 의견을 들려주세요.</p>
       </div>
