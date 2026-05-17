@@ -1,5 +1,12 @@
 <template>
   <div class="survey-wrapper">
+    
+    <Transition name="fade">
+      <div v-if="showToast" class="toast-notification">
+        ✅ 소중한 의견이 기록되었습니다!
+      </div>
+    </Transition>
+
     <div 
       class="survey-container" 
       :style="{ transform: `scale(${containerScale})`, transformOrigin: 'center center' }"
@@ -24,12 +31,6 @@
           </div>
         </div>
       </div>
-
-      <Transition name="fade">
-        <div v-if="showToast" class="toast-notification">
-          ✅ 소중한 의견이 기록되었습니다!
-        </div>
-      </Transition>
     </div>
   </div>
 </template>
@@ -81,18 +82,13 @@ onUnmounted(() => {
   window.removeEventListener('resize', updateScale)
 })
 
-// 🌟 체감 속도를 0초로 만드는 즉시 제출 함수
 const submitRating = (item) => {
   if (loading.value) return 
   
-  // 1. 시각적 피드백 즉시 반영
   selectedOption.value = { score: item.score, text: item.text }
   loading.value = true
-
-  // 2. 💡 구글 서버의 응답을 기다리지 않고 "즉시 완료 토스트" 노출
   showToast.value = true
 
-  // 3. 백엔드 데이터 전송은 뒷단(Background)에서 비동기로 조용히 실행
   const payload = {
     score: item.score,
     satisfaction: item.text
@@ -103,11 +99,9 @@ const submitRating = (item) => {
       'Content-Type': 'text/plain'
     }
   }).catch((error) => {
-    // 사용자는 이미 화면을 마친 상태이므로, 에러는 콘솔 로그에만 남겨 관리자가 확인하도록 합니다.
     console.error('백그라운드 전송 실패:', error)
   })
   
-  // 4. 💡 구글 응답과 관계없이 1초 뒤에 화면을 깨끗하게 비워 다음 사람이 바로 참여하게 함
   setTimeout(() => {
     showToast.value = false
     selectedOption.value = { score: null, text: '' }
@@ -117,7 +111,7 @@ const submitRating = (item) => {
 </script>
 
 <style scoped>
-/* 1. 모니터 전체 화면 스타일 */
+/* 1. PC 및 대형 화면 모니터 스타일 */
 .survey-wrapper {
   background-color: #444444;
   height: 100vh;
@@ -181,7 +175,6 @@ const submitRating = (item) => {
   opacity: 0.6;
 }
 
-/* 만족도 카드 스타일 */
 .rating-item {
   flex: 1;
   border: 4px solid #333333; 
@@ -235,13 +228,25 @@ const submitRating = (item) => {
   opacity: 0.9;
 }
 
-/* 2. 📱 모바일/태블릿용 반응형 스타일 */
+/* 2. 📱 폰/모바일용 반응형 스타일 */
 @media (max-width: 768px) {
   .survey-wrapper {
-    padding: 30px 15px;
-    overflow-y: auto; 
+    /* 🌟 해결 2: 모바일에서는 flex 정렬을 풀고 일반 블록 레이아웃으로 변경하여 상단 글씨 짤림 방지 */
+    display: block;
+    padding: 40px 20px;
+    height: 100vh;
+    height: 100dvh;
+    overflow-y: auto; /* 자연스러운 터치 스크롤 보장 */
   }
 
+  .survey-container {
+    width: 100%;
+    transform: none !important; /* 모바일은 트랜스폼 해제 */
+  }
+
+  .survey-header {
+    margin-bottom: 40px;
+  }
   .main-title { font-size: 2.5rem; margin-bottom: 10px; }
   .sub-title-1 { font-size: 1.6rem; margin-bottom: 12px; }
   .sub-title-2 { font-size: 1.1rem; }
@@ -287,9 +292,18 @@ const submitRating = (item) => {
     font-size: 1.2rem;
     margin-left: auto;
   }
+
+  /* 🌟 모바일 전용 토스트 크기 최적화 (폰 화면에 맞게 알맞게 축소) */
+  .toast-notification {
+    top: 30px !important;
+    padding: 18px 40px !important;
+    font-size: 1.4rem !important;
+    border-radius: 50px !important;
+    border-width: 3px !important;
+  }
 }
 
-/* 대형 토스트 알림창 스타일 */
+/* 대형 토스트 알림창 스타일 (기본 PC 사양) */
 .toast-notification {
   position: fixed;
   top: 80px; 
@@ -302,7 +316,7 @@ const submitRating = (item) => {
   font-size: 2.5rem; 
   font-weight: 800;
   box-shadow: 0 15px 50px rgba(0, 0, 0, 0.6);
-  z-index: 9999;
+  z-index: 99999; /* 최상위 레이어 보장 */
   white-space: nowrap;
   border: 4px solid #42b883;
 }
