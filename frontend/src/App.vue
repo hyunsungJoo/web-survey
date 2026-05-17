@@ -52,7 +52,6 @@ const showToast = ref(false)
 
 const GOOGLE_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwybid-i3loF0bbZsqFWl9ZXcYK9gGLD2KVnXFoNWahcY1Pombp3OAGepdmqIUB9qrH/exec'
 
-// 모니터 및 브라우저 창 크기에 맞춰 강제로 한 화면에 맞추는 스케일 계산 로직
 const containerScale = ref(1)
 
 const updateScale = () => {
@@ -82,38 +81,38 @@ onUnmounted(() => {
   window.removeEventListener('resize', updateScale)
 })
 
-const submitRating = async (item) => {
+// 🌟 체감 속도를 0초로 만드는 즉시 제출 함수
+const submitRating = (item) => {
   if (loading.value) return 
   
+  // 1. 시각적 피드백 즉시 반영
   selectedOption.value = { score: item.score, text: item.text }
   loading.value = true
 
-  try {
-    const payload = {
-      score: item.score,
-      satisfaction: item.text
-    }
+  // 2. 💡 구글 서버의 응답을 기다리지 않고 "즉시 완료 토스트" 노출
+  showToast.value = true
 
-    const response = await axios.post(GOOGLE_WEB_APP_URL, JSON.stringify(payload), {
-      headers: {
-        'Content-Type': 'text/plain'
-      }
-    })
-    
-    if (response.data.result === 'success') {
-      showToast.value = true
-      setTimeout(() => {
-        showToast.value = false
-        selectedOption.value = { score: null, text: '' }
-      }, 1000)
-    }
-  } catch (error) {
-    console.error('제출 에러:', error)
-    alert('제출에 실패했습니다. 다시 시도해 주세요.')
-    selectedOption.value = { score: null, text: '' }
-  } finally {
-    loading.value = false
+  // 3. 백엔드 데이터 전송은 뒷단(Background)에서 비동기로 조용히 실행
+  const payload = {
+    score: item.score,
+    satisfaction: item.text
   }
+
+  axios.post(GOOGLE_WEB_APP_URL, JSON.stringify(payload), {
+    headers: {
+      'Content-Type': 'text/plain'
+    }
+  }).catch((error) => {
+    // 사용자는 이미 화면을 마친 상태이므로, 에러는 콘솔 로그에만 남겨 관리자가 확인하도록 합니다.
+    console.error('백그라운드 전송 실패:', error)
+  })
+  
+  // 4. 💡 구글 응답과 관계없이 1초 뒤에 화면을 깨끗하게 비워 다음 사람이 바로 참여하게 함
+  setTimeout(() => {
+    showToast.value = false
+    selectedOption.value = { score: null, text: '' }
+    loading.value = false
+  }, 1000)
 }
 </script>
 
@@ -193,13 +192,10 @@ const submitRating = async (item) => {
   background-color: #ffffff;
   color: #1a202c;
   box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
-  
-  /* 🌟 모바일 기기 잔상 및 테두리 아웃라인 방지 코드 추가 */
   -webkit-tap-highlight-color: transparent;
   outline: none;
 }
 
-/* 🌟 중요: 마우스 커서가 있는 PC 환경에서만 호버 테두리 효과 발동 (모바일 잔상 버그 해결) */
 @media (hover: hover) {
   .rating-item:hover {
     border-color: #42b883;
@@ -266,9 +262,8 @@ const submitRating = async (item) => {
     border-radius: 16px;
   }
 
-  /* 🌟 모바일 끈적이는 터치 이동 제거 (클릭 잔상 유발 방지) */
   .rating-item:active {
-    background-color: #f9f9f9; /* 터치한 순간에만 살짝 피드백 제공 */
+    background-color: #f9f9f9; 
   }
 
   .emoji {
