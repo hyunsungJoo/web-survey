@@ -39,11 +39,11 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import axios from 'axios'
 
 const ratingOptions = [
-  { score: 5, text: '매우 만족', emoji: '😍' },
-  { score: 4, text: '만족', emoji: '😊' },
-  { score: 3, text: '보통', emoji: '😐' },
+  { score: 1, text: '매우 불만족', emoji: '😰' },
   { score: 2, text: '불만족', emoji: '😨' },
-  { score: 1, text: '매우 불만족', emoji: '😰' }
+  { score: 3, text: '보통', emoji: '😐' },
+  { score: 4, text: '만족', emoji: '😊' },
+  { score: 5, text: '매우 만족', emoji: '😍' }
 ]
 
 const selectedOption = ref({ score: null, text: '' })
