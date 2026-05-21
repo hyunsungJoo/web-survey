@@ -35,8 +35,19 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, onUpdated } from 'vue'
 import axios from 'axios'
+
+// Twemoji 변환 함수 (레이아웃에 영향을 주지 않도록 설정)
+const parseEmojis = () => {
+  if (window.twemoji) {
+    window.twemoji.parse(document.body, { 
+      folder: 'svg', 
+      ext: '.svg',
+      base: 'https://twemoji.maxcdn.com/v/latest/' 
+    });
+  }
+}
 
 const ratingOptions = [
   { score: 1, text: '매우 불만족', emoji: '😰' },
@@ -55,27 +66,29 @@ const GOOGLE_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwybid-i3loF
 const containerScale = ref(1)
 
 const updateScale = () => {
-  // 태블릿/스탠바이미 지원을 위해 500px 이하는 모바일 모드
   if (window.innerWidth <= 500) {
     containerScale.value = 1
     return
   }
-  
   const baseWidth = 1750 
   const baseHeight = 960 
-  
   const availableWidth = window.innerWidth - 60
   const availableHeight = window.innerHeight - 60
-  
   const scaleX = availableWidth / baseWidth
   const scaleY = availableHeight / baseHeight
-  
   containerScale.value = Math.min(scaleX, scaleY, 1)
 }
 
 onMounted(() => {
   updateScale()
   window.addEventListener('resize', updateScale)
+  // 처음 렌더링 시 실행
+  setTimeout(parseEmojis, 300)
+})
+
+onUpdated(() => {
+  // 화면 데이터 변경 시 다시 실행
+  parseEmojis()
 })
 
 onUnmounted(() => {
@@ -84,23 +97,14 @@ onUnmounted(() => {
 
 const submitRating = (item) => {
   if (loading.value) return 
-  
   selectedOption.value = { score: item.score, text: item.text }
   loading.value = true
   showToast.value = true
 
-  const payload = {
-    score: item.score,
-    satisfaction: item.text
-  }
-
+  const payload = { score: item.score, satisfaction: item.text }
   axios.post(GOOGLE_WEB_APP_URL, JSON.stringify(payload), {
-    headers: {
-      'Content-Type': 'text/plain'
-    }
-  }).catch((error) => {
-    console.error('백그라운드 전송 실패:', error)
-  })
+    headers: { 'Content-Type': 'text/plain' }
+  }).catch((error) => { console.error('백그라운드 전송 실패:', error) })
   
   setTimeout(() => {
     showToast.value = false
